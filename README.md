@@ -7,8 +7,10 @@
     
     // create a context with the collector shutdown deadline
     ctx, _ := context.WithDeadline(context.Background(), time.Now().Add(5 * time.Second))
+    
     // create a collector
-    c := collector.NewPubSubMsgCollector(client, channelName)
+    c := collector.New(client, channelName)
+
     // run the collector
     c.Run(ctx)
     
