@@ -31,3 +31,15 @@
     
     c.Clean()
 ```
+
+# mongo migrator docker [mongo\_migrations](./mongo_migrations)
+
+https://github.com/seppevs/migrate-mongo
+
+```
+pushd mongo_migrations
+docker image build -f Dockerfile.migrator -t eth_migrate:1.0 .
+
+docker container run --network="host" eth_migrate:1.0 'mongodb://127.0.0.1:27017/Leads?authSource=admin'
+docker container run eth_migrate:1.0  'mongodb://host.docker.internal:27017/Leads?authSource=admin'
+```
