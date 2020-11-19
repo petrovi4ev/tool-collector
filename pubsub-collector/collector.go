@@ -41,10 +41,16 @@ func (collector *PubSubMsgCollector) Run(ctx context.Context) {
 }
 
 func (collector *PubSubMsgCollector) Messages() ChannelMessageMap {
+	collector.messages.mx.Lock()
+	defer collector.messages.mx.Unlock()
+
 	return collector.messages.M
 }
 
 func (collector *PubSubMsgCollector) Clean() {
+	collector.messages.mx.Lock()
+	defer collector.messages.mx.Unlock()
+
 	collector.messages.M = make(ChannelMessageMap, 0)
 }
 
