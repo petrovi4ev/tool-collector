@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
-	collector "github.com/petrovi4ev/pubsub-collector"
+	collector "github.com/BitMedia-IO/tool-collector/pubsub-collector"
 	"gopkg.in/redis.v3"
 	"os"
 	"strings"
