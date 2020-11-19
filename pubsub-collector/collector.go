@@ -40,13 +40,6 @@ func (collector *PubSubMsgCollector) Run(ctx context.Context) {
 	}(ctx)
 }
 
-func (collector *PubSubMsgCollector) Messages() ChannelMessageMap {
-	collector.messages.mx.Lock()
-	defer collector.messages.mx.Unlock()
-
-	return collector.messages.M
-}
-
 func (collector *PubSubMsgCollector) Clean() {
 	collector.messages.mx.Lock()
 	defer collector.messages.mx.Unlock()
@@ -68,7 +61,7 @@ func (collector *PubSubMsgCollector) subscribe() (pubsub *redis.PubSub, cancel f
 	return
 }
 
-func (collector *PubSubMsgCollector) collect(_ context.Context, pubsub *redis.PubSub) {
+func (collector *PubSubMsgCollector) collect(ctx context.Context, pubsub *redis.PubSub) {
 	for {
 		msgi, err := pubsub.Receive()
 
@@ -77,6 +70,10 @@ func (collector *PubSubMsgCollector) collect(_ context.Context, pubsub *redis.Pu
 		}
 
 		select {
+		case <-ctx.Done():
+			// todo решить проблему с завершением горутины!!!
+			fmt.Println("does not work")
+			return
 		default:
 			switch msg := msgi.(type) {
 			case *redis.Subscription:
