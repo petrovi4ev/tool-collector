@@ -15,7 +15,7 @@ func TestSingleMessage(t *testing.T) {
 
 	t.Run("not empty message", func(t *testing.T) {
 		testCollector.Run(ctx)
-		redisClient.Publish(channelName, testMsg)
+		redisClient.Publish(context.Background(), channelName, testMsg)
 
 		<-ctx.Done()
 
@@ -26,7 +26,7 @@ func TestSingleMessage(t *testing.T) {
 	t.Run("empty message", func(t *testing.T) {
 		testCollector.Clean()
 		testCollector.Run(ctx)
-		redisClient.Publish(channelName, "")
+		redisClient.Publish(context.Background(), channelName, "")
 
 		<-ctx.Done()
 

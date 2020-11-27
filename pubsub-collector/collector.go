@@ -3,7 +3,7 @@ package pubsub_collector
 import (
 	"context"
 	"fmt"
-	"gopkg.in/redis.v3"
+	"github.com/go-redis/redis/v8"
 	"sync"
 )
 
@@ -34,7 +34,7 @@ func (collector *PubSubMsgCollector) Run(ctx context.Context) {
 		pubsub, cancel := collector.subscribe()
 		defer cancel()
 
-		go collector.collect(ctx, pubsub)
+		go collector.collect(pubsub)
 
 		<-ctx.Done()
 	}(ctx)
@@ -48,10 +48,8 @@ func (collector *PubSubMsgCollector) Clean() {
 }
 
 func (collector *PubSubMsgCollector) subscribe() (pubsub *redis.PubSub, cancel func()) {
-	pubsub, err := collector.redisClient.Subscribe(collector.redisChannel)
-	if err != nil {
-		panic(fmt.Sprintf("subscribe error: %s", err.Error()))
-	}
+	pubsub = collector.redisClient.Subscribe(context.Background(), collector.redisChannel)
+
 	cancel = func() {
 		if err := pubsub.Close(); err != nil {
 			fmt.Printf("subscribe closing error: %s", err.Error())
@@ -61,19 +59,15 @@ func (collector *PubSubMsgCollector) subscribe() (pubsub *redis.PubSub, cancel f
 	return
 }
 
-func (collector *PubSubMsgCollector) collect(ctx context.Context, pubsub *redis.PubSub) {
+func (collector *PubSubMsgCollector) collect(pubsub *redis.PubSub) {
 	for {
-		msgi, err := pubsub.Receive()
+		msgi, err := pubsub.Receive(context.Background())
 
 		if err != nil {
 			break
 		}
 
 		select {
-		case <-ctx.Done():
-			// todo решить проблему с завершением горутины!!!
-			fmt.Println("does not work")
-			return
 		default:
 			switch msg := msgi.(type) {
 			case *redis.Subscription:

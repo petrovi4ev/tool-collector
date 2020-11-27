@@ -1,9 +1,10 @@
 package pubsub_collector_test
 
 import (
+	"context"
 	"fmt"
 	collector "github.com/BitMedia-IO/tool-collector/pubsub-collector"
-	"gopkg.in/redis.v3"
+	"github.com/go-redis/redis/v8"
 	"os"
 	"testing"
 )
@@ -22,7 +23,7 @@ func TestMain(m *testing.M) {
 
 func getTestCollector() collector.Collector {
 	redisClient := redis.NewClient(&redis.Options{Addr: "localhost:6384"})
-	pong, err := redisClient.Ping().Result()
+	pong, err := redisClient.Ping(context.Background()).Result()
 	fmt.Println(pong, err)
 
 	return collector.New(redisClient, "test")
@@ -35,7 +36,7 @@ func getTestRedisClient() *redis.Client {
 		DB:       0,
 	})
 
-	_, err := client.Ping().Result()
+	_, err := client.Ping(context.Background()).Result()
 	if err != nil {
 		fmt.Printf("connection error: %s", err.Error())
 		os.Exit(1)
