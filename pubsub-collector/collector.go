@@ -34,7 +34,7 @@ func (collector *PubSubMsgCollector) Run(ctx context.Context) {
 		pubsub, cancel := collector.subscribe()
 		defer cancel()
 
-		go collector.collect(pubsub)
+		go collector.collect(ctx, pubsub)
 
 		<-ctx.Done()
 	}(ctx)
@@ -59,23 +59,15 @@ func (collector *PubSubMsgCollector) subscribe() (pubsub *redis.PubSub, cancel f
 	return
 }
 
-func (collector *PubSubMsgCollector) collect(pubsub *redis.PubSub) {
+func (collector *PubSubMsgCollector) collect(ctx context.Context, pubsub *redis.PubSub) {
 	for {
-		msgi, err := pubsub.Receive(context.Background())
-
-		if err != nil {
-			break
-		}
-
 		select {
-		default:
-			switch msg := msgi.(type) {
-			case *redis.Subscription:
-			case *redis.Message:
-				collector.messages.Store(msg.Channel, msg.Payload)
-			default:
-				fmt.Printf("error: unknown message: %#v", msgi)
-			}
+		case msg := <-pubsub.Channel():
+			collector.messages.Store(msg.Channel, msg.Payload)
+		case <-ctx.Done():
+			fmt.Println("Stop collecting...")
+
+			return
 		}
 	}
 }

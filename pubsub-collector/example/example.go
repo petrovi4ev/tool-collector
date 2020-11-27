@@ -28,6 +28,7 @@ func main() {
 
 	c := collector.New(client, channelName)
 	c.Run(ctx)
+	time.Sleep(50 * time.Millisecond)
 
 	go func(ctx context.Context) {
 		tick := time.NewTicker(1 * time.Second)

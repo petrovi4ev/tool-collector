@@ -15,7 +15,9 @@ func TestSingleMessage(t *testing.T) {
 
 	t.Run("not empty message", func(t *testing.T) {
 		testCollector.Run(ctx)
-		redisClient.Publish(context.Background(), channelName, testMsg)
+		time.Sleep(1 * time.Second)
+
+		redisClient.Publish(ctx, channelName, testMsg)
 
 		<-ctx.Done()
 
