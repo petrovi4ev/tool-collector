@@ -3,8 +3,8 @@ package main
 import (
 	"context"
 	"fmt"
-	collector "github.com/petrovi4ev/pubsub-collector"
-	"gopkg.in/redis.v3"
+	collector "github.com/BitMedia-IO/tool-collector/pubsub-collector"
+	"github.com/go-redis/redis/v8"
 	"os"
 	"strings"
 	"time"
@@ -20,7 +20,7 @@ func main() {
 		DB:       0,
 	})
 
-	_, err := client.Ping().Result()
+	_, err := client.Ping(context.Background()).Result()
 	if err != nil {
 		fmt.Printf("connection error: %s", err.Error())
 		os.Exit(1)
@@ -28,6 +28,7 @@ func main() {
 
 	c := collector.New(client, channelName)
 	c.Run(ctx)
+	time.Sleep(50 * time.Millisecond)
 
 	go func(ctx context.Context) {
 		tick := time.NewTicker(1 * time.Second)
@@ -36,7 +37,7 @@ func main() {
 			case <-tick.C:
 				nanoTime := time.Now().UnixNano()
 				fmt.Println(nanoTime)
-				client.Publish(channelName, fmt.Sprintf("Ok, guys. Now is %d", nanoTime))
+				client.Publish(context.Background(), channelName, fmt.Sprintf("Ok, guys. Now is %d", nanoTime))
 			case <-ctx.Done():
 				return
 			}
