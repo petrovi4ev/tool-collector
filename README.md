@@ -13,6 +13,8 @@
 
     // run the collector
     c.Run(ctx)
+    // since the collector is started in the goroutine, you need to wait a bit for it to start working
+    time.Sleep(20 * time.Millisecond)
     
     /* 
         the tested code is executed 

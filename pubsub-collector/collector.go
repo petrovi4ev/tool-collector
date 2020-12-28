@@ -3,7 +3,7 @@ package pubsub_collector
 import (
 	"context"
 	"fmt"
-	"gopkg.in/redis.v3"
+	"github.com/go-redis/redis/v8"
 	"sync"
 )
 
@@ -40,13 +40,6 @@ func (collector *PubSubMsgCollector) Run(ctx context.Context) {
 	}(ctx)
 }
 
-func (collector *PubSubMsgCollector) Messages() ChannelMessageMap {
-	collector.messages.mx.Lock()
-	defer collector.messages.mx.Unlock()
-
-	return collector.messages.M
-}
-
 func (collector *PubSubMsgCollector) Clean() {
 	collector.messages.mx.Lock()
 	defer collector.messages.mx.Unlock()
@@ -55,10 +48,8 @@ func (collector *PubSubMsgCollector) Clean() {
 }
 
 func (collector *PubSubMsgCollector) subscribe() (pubsub *redis.PubSub, cancel func()) {
-	pubsub, err := collector.redisClient.Subscribe(collector.redisChannel)
-	if err != nil {
-		panic(fmt.Sprintf("subscribe error: %s", err.Error()))
-	}
+	pubsub = collector.redisClient.Subscribe(context.Background(), collector.redisChannel)
+
 	cancel = func() {
 		if err := pubsub.Close(); err != nil {
 			fmt.Printf("subscribe closing error: %s", err.Error())
@@ -68,23 +59,15 @@ func (collector *PubSubMsgCollector) subscribe() (pubsub *redis.PubSub, cancel f
 	return
 }
 
-func (collector *PubSubMsgCollector) collect(_ context.Context, pubsub *redis.PubSub) {
+func (collector *PubSubMsgCollector) collect(ctx context.Context, pubsub *redis.PubSub) {
 	for {
-		msgi, err := pubsub.Receive()
-
-		if err != nil {
-			break
-		}
-
 		select {
-		default:
-			switch msg := msgi.(type) {
-			case *redis.Subscription:
-			case *redis.Message:
-				collector.messages.Store(msg.Channel, msg.Payload)
-			default:
-				fmt.Printf("error: unknown message: %#v", msgi)
-			}
+		case msg := <-pubsub.Channel():
+			collector.messages.Store(msg.Channel, msg.Payload)
+		case <-ctx.Done():
+			fmt.Println("Stop collecting...")
+
+			return
 		}
 	}
 }

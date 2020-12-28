@@ -22,3 +22,16 @@ func (c *PubSubMessages) Store(channelName, msg string) {
 	defer c.mx.Unlock()
 	c.M[channelName] = append(c.M[channelName], msg)
 }
+
+func (collector *PubSubMsgCollector) Messages() ChannelMessageMap {
+	collector.messages.mx.Lock()
+	result := make(map[string][]string)
+	for k, v := range collector.messages.M {
+		messages := make([]string, len(v))
+		copy(messages, v)
+		result[k] = messages
+	}
+	collector.messages.mx.Unlock()
+
+	return result
+}
