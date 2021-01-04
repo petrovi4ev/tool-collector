@@ -1,0 +1,42 @@
+{
+  "h:A": {
+    "type": "hash",
+    "value": {
+      "a": "1",
+      "b": "2"
+    }
+  },
+  "k:A": {
+    "type": "string",
+    "value": "1"
+  },
+  "k:B": {
+    "type": "string",
+    "value": "2"
+  },
+  "k:C": {
+    "type": "string",
+    "value": "3"
+  },
+  "l:A": {
+    "type": "list",
+    "value": [
+      "one",
+      "two",
+      "three"
+    ]
+  },
+  "z:A": {
+    "type": "zset",
+    "value": [
+      [
+        0,
+        "A"
+      ],
+      [
+        1,
+        "B"
+      ]
+    ]
+  }
+}
